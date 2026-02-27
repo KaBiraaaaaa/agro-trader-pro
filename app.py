@@ -16,7 +16,7 @@ min_profit = st.sidebar.slider("Minimum True Net Profit (₹)", 1000, 50000, 500
 
 # --- SIDEBAR: ADVANCED LOGISTICS (OVERRIDES) ---
 st.sidebar.markdown("---")
-with st.sidebar.expander("⚙️ Advanced Logistics (Overrides)", expanded=False):
+with st.sidebar.expander("⚙️ Custom Logistics", expanded=False):
     st.caption("Leave as 0.0 to use system defaults based on crop type.")
     custom_freight = st.number_input("Custom Truck Rate (₹/km)", min_value=0.0, value=0.0, step=1.0)
     custom_tax = st.number_input("Custom Mandi Tax (%)", min_value=0.0, value=0.0, step=0.5)

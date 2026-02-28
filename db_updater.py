@@ -70,10 +70,13 @@ def update_database(fresh_df):
         )
     ''')
     
-    # 2. Add the fresh data
-    fresh_df[['state', 'market', 'commodity', 'modal_price', 'arrival_date']].to_sql(
-        'mandi_prices', conn, if_exists='append', index=False
-    )
+   # 2. Add the fresh data safely (Update if exists, Insert if new)
+    data_to_insert = fresh_df[['state', 'market', 'commodity', 'modal_price', 'arrival_date']].values.tolist()
+
+    cursor.executemany('''
+        INSERT OR REPLACE INTO mandi_prices (state, market, commodity, modal_price, arrival_date)
+        VALUES (?, ?, ?, ?, ?)
+    ''', data_to_insert)
     
     # 3. Clean up the database (Delete data older than 7 days)
     # This is crucial so your GitHub repository doesn't run out of storage space

@@ -131,3 +131,32 @@ def calculate_real_profit(commodity, distance_km, buy_price_qtl, sell_price_qtl,
         "wastage_loss": (truck_capacity_qtl * profile["wastage"]) * sell_price_qtl,
         "fees_and_labor": total_labor + mandi_fees, "freight": freight_cost
     }
+def analyze_state_volatility():
+    """Finds the state and commodity with the most extreme price gap for Macro Alerts."""
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        # 1. Find the latest date to ensure we only broadcast fresh data
+        latest_date_str = pd.read_sql_query("SELECT MAX(arrival_date) FROM mandi_prices", conn).iloc[0, 0]
+        if not latest_date_str: return None
+
+        # 2. Calculate the price gaps across all states
+        query = f"""
+        SELECT state, commodity, 
+               MIN(modal_price) as min_price, 
+               MAX(modal_price) as max_price,
+               (MAX(modal_price) - MIN(modal_price)) as price_gap
+        FROM mandi_prices
+        WHERE arrival_date = '{latest_date_str}'
+        GROUP BY state, commodity
+        HAVING price_gap > 500  -- Only flag gaps larger than ₹500/Qtl
+        ORDER BY price_gap DESC
+        LIMIT 1
+        """
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        
+        if not df.empty:
+            return df.iloc[0].to_dict()
+    except Exception as e:
+        print(f"Volatility Error: {e}")
+    return None

@@ -1,0 +1,38 @@
+name: Agro Trader Daily Automation
+
+# Runs every day at 03:30 UTC (9:00 AM IST)
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch: # Gives you a "Run workflow" button to test manually
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install pandas requests geopy
+
+      - name: Update Database (Fetch New Prices)
+        run: python db_updater.py
+
+      - name: Run Telegram Bot
+        run: python telegram_alert.py
+
+      - name: Commit and Push Updated Database
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add agro_data.db
+          # Only commit if the database actually changed
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated DB update" && git push)

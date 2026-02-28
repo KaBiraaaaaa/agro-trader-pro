@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 # ==========================================
 DB_NAME = "agro_data.db"
 # You will get this free key from data.gov.in
-API_KEY = "YOUR_DATA_GOV_API_KEY_HERE" 
+API_KEY = "579b464db66ec23bdd0000017c689950564f49c55cd9635e63c4ae8e" 
 # The official endpoint for real-time Mandi prices
 API_URL = f"https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key={API_KEY}&format=json&limit=2000"
 

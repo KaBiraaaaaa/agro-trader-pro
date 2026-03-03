@@ -132,23 +132,24 @@ def calculate_real_profit(commodity, distance_km, buy_price_qtl, sell_price_qtl,
         "fees_and_labor": total_labor + mandi_fees, "freight": freight_cost
     }
 def analyze_state_volatility():
-    """Finds the state and commodity with the most extreme price gap for Macro Alerts."""
+    """Finds the state and commodity with the most extreme price gap (Filtered for cash crops)."""
     try:
         conn = sqlite3.connect(DB_NAME)
-        # 1. Find the latest date to ensure we only broadcast fresh data
         latest_date_str = pd.read_sql_query("SELECT MAX(arrival_date) FROM mandi_prices", conn).iloc[0, 0]
         if not latest_date_str: return None
 
-        # 2. Calculate the price gaps across all states
+        # Filter for actual traded commodities, ignoring outlier flowers/spices
+        target_crops = "('Tomato', 'Soybean', 'Paddy', 'Wheat', 'Mustard', 'Cotton', 'Onion', 'Potato', 'Maize')"
+        
         query = f"""
         SELECT state, commodity, 
                MIN(modal_price) as min_price, 
                MAX(modal_price) as max_price,
                (MAX(modal_price) - MIN(modal_price)) as price_gap
         FROM mandi_prices
-        WHERE arrival_date = '{latest_date_str}'
+        WHERE arrival_date = '{latest_date_str}' AND commodity IN {target_crops}
         GROUP BY state, commodity
-        HAVING price_gap > 500  -- Only flag gaps larger than ₹500/Qtl
+        HAVING price_gap > 500  
         ORDER BY price_gap DESC
         LIMIT 1
         """
